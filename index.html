@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 لعبة Aviator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: white;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(255,255,255,0.1);
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .balance {
+            background: linear-gradient(45deg, #00b4d8, #0077b6);
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 18px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 180, 216, 0.3);
+        }
+        
+        .round-info {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 15px;
+            margin: 15px 0;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .timer {
+            font-size: 28px;
+            font-weight: bold;
+            margin: 10px 0;
+            color: #00ff88;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+        }
+        
+        .game-area {
+            position: relative;
+            height: 350px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 15px;
+            margin: 20px 0;
+            overflow: hidden;
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+        
+        .line {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #ffd700, transparent);
+            transform: translateY(-50%);
+            z-index: 1;
+        }
+        
+        #plane {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            font-size: 50px;
+            transform: translateX(-50%);
+            z-index: 2;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.7));
+        }
+        
+        .multiplier {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #00ff88;
+            z-index: 3;
+        }
+        
+        .bet-amounts {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .bet-btn {
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .bet-btn:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+        
+        .bet-btn.selected {
+            background: linear-gradient(45deg, #00b09b, #96c93d);
+            box-shadow: 0 4px 15px rgba(0, 176, 155, 0.4);
+        }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .btn {
+            padding: 20px;
+            border: none;
+            border-radius: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        
+        .btn-bet {
+            background: linear-gradient(45deg, #ff416c, #ff4b2b);
+        }
+        
+        .btn-cashout {
+            background: linear-gradient(45deg, #00b09b, #96c93d);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        
+        .btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+        
+        .message {
+            text-align: center;
+            margin: 15px 0;
+            font-size: 18px;
+            min-height: 27px;
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.05);
+        }
+        
+        .win { 
+            color: #00ff88;
+            background: rgba(0, 255, 136, 0.1);
+        }
+        
+        .lose { 
+            color: #ff4444;
+            background: rgba(255, 68, 68, 0.1);
+        }
+        
+        .info-box {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: 14px;
+            line-height: 1.6;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .action-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .action-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        
+        @keyframes takeoff {
+            0% { bottom: 20px; transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.2); }
+            100% { bottom: 90%; transform: translateX(-50%) scale(1); }
+        }
+        
+        @keyframes crash {
+            0% { transform: translateX(-50%) rotate(0deg); }
+            100% { transform: translateX(-50%) rotate(180deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="user-info">
+                <div>
+                    <h2 style="margin:0;">✈️ Aviator</h2>
+                    <small>ID: <span id="user-id">0</span></small>
+                </div>
+            </div>
+            <div class="balance" id="balance">0 💰</div>
+        </div>
+        
+        <div class="round-info">
+            <div>الجولة: <span id="round-id">#0</span></div>
+            <div class="timer" id="timer">00:00</div>
+            <div id="round-status">⏳ جاري التحميل...</div>
+            <div id="multiplier" style="font-size: 20px; margin-top: 10px;">المضاعف: 1.00x</div>
+        </div>
+        
+        <div class="game-area">
+            <div class="line"></div>
+            <div id="plane">✈️</div>
+            <div class="multiplier" id="current-multiplier">1.00x</div>
+        </div>
+        
+        <div class="message" id="message">مرحباً! اختر مبلغ الرهان</div>
+        
+        <div class="bet-amounts" id="bet-amounts">
+            <!-- سيتم ملؤها بواسطة JavaScript -->
+        </div>
+        
+        <div class="controls">
+            <button class="btn btn-bet" onclick="placeBet()" id="btn-bet">
+                🎯 وضع الرهان
+            </button>
+            <button class="btn btn-cashout" onclick="cashOut()" id="btn-cashout" disabled>
+                💰 صرف الآن
+            </button>
+        </div>
+        
+        <div class="action-buttons">
+            <button class="action-btn" onclick="refreshBalance()">
+                🔄 تحديث الرصيد
+            </button>
+            <button class="action-btn" onclick="showSendForm()">
+                📤 إرسال رصيد
+            </button>
+            <button class="action-btn" onclick="showRoundInfo()">
+                📊 معلومات الجولة
+            </button>
+        </div>
+        
+        <div class="info-box">
+            <strong>📖 التعليمات:</strong>
+            <ul style="margin:10px 0; padding-right:20px;">
+                <li>اختر مبلغ الرهان من الأعلى</li>
+                <li>اضغط على "وضع الرهان" خلال 30 ثانية</li>
+                <li>شاهد الطائرة تصعد ويزيد المضاعف</li>
+                <li>اضغط على "صرف الآن" قبل سقوط الطائرة</li>
+                <li>الجولة: 60 ثانية (30 ثانية للرهان)</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // المتغيرات العامة
+        const USER_ID = new URLSearchParams(window.location.search).get('user_id') || '0';
+        const BASE_URL = '{BASE_URL}';
+        const BET_OPTIONS = [10, 50, 100, 500, 1000, 5000];
+        
+        let selectedAmount = 0;
+        let currentBet = null;
+        let currentMultiplier = 1.0;
+        let isPlaying = false;
+        let roundInterval = null;
+        let planeAnimation = null;
+        
+        // تهيئة الصفحة
+        document.getElementById('user-id').textContent = USER_ID;
+        
+        // إنشاء أزرار الرهان
+        function createBetButtons() {
+            const container = document.getElementById('bet-amounts');
+            container.innerHTML = '';
+            
+            BET_OPTIONS.forEach(amount => {
+                const button = document.createElement('button');
+                button.className = 'bet-btn';
+                button.textContent = amount;
+                button.onclick = () => selectAmount(amount);
+                container.appendChild(button);
+            });
+            
+            // اختيار أول مبلغ بشكل افتراضي
+            if (BET_OPTIONS.length > 0) {
+                selectAmount(BET_OPTIONS[0]);
+            }
+        }
+        
+        // اختيار مبلغ الرهان
+        function selectAmount(amount) {
+            selectedAmount = amount;
+            
+            // تحديث تنسيق الأزرار
+            document.querySelectorAll('.bet-btn').forEach(btn => {
+                btn.classList.remove('selected');
+                if (parseInt(btn.textContent) === amount) {
+                    btn.classList.add('selected');
+                }
+            });
+            
+            document.getElementById('message').textContent = `✅ تم اختيار الرهان: ${amount} نقطة`;
+            document.getElementById('message').className = 'message';
+        }
+        
+        // جلب الرصيد
+        async function refreshBalance() {
+            try {
+                const response = await fetch(`${BASE_URL}/api/balance/${USER_ID}`);
+                const data = await response.json();
+                
+                if (data.error) {
+                    showMessage('❌ خطأ في جلب الرصيد', 'lose');
+                    return;
+                }
+                
+                document.getElementById('balance').textContent = data.balance + ' 💰';
+                showMessage('✅ تم تحديث الرصيد', 'win');
+            } catch (error) {
+                console.error('خطأ في جلب الرصيد:', error);
+                showMessage('❌ خطأ في الاتصال', 'lose');
+            }
+        }
+        
+        // جلب معلومات الجولة
+        async function refreshRoundInfo() {
+            try {
+                const response = await fetch(`${BASE_URL}/api/round`);
+                const data = await response.json();
+                
+                if (data.error) {
+                    return;
+                }
+                
+                document.getElementById('round-id').textContent = `#${data.round_id || 0}`;
+                document.getElementById('round-status').textContent = 
+                    data.status === 'betting' ? '🕒 وقت الرهان' :
+                    data.status === 'counting' ? '✈️ الجولة جارية' :
+                    '⏳ انتظار الجولة التالية';
+                
+                // تحديث العداد
+                if (data.status === 'betting' && data.betting_time_left > 0) {
+                    updateTimer(data.betting_time_left);
+                } else if (data.status === 'counting') {
+                    updateTimer(data.time_left || 30);
+                }
+                
+                // تحديث المضاعف
+                if (data.result) {
+                    document.getElementById('multiplier').textContent = `المضاعف: ${data.result.toFixed(2)}x`;
+                }
+                
+                // تمكين/تعطيل الأزرار
+                const canBet = data.status === 'betting' && data.betting_time_left > 0 && !isPlaying;
+                document.getElementById('btn-bet').disabled = !canBet;
+                
+            } catch (error) {
+                console.error('خطأ في جلب معلومات الجولة:', error);
+            }
+        }
+        
+        // تحديث العداد
+        function updateTimer(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            document.getElementById('timer').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+        
+        // وضع الرهان
+        async function placeBet() {
+            if (selectedAmount <= 0) {
+                showMessage('❌ الرجاء اختيار مبلغ الرهان', 'lose');
+                return;
+            }
+            
+            if (isPlaying) {
+                showMessage('❌ لديك رهان نشط بالفعل', 'lose');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${BASE_URL}/api/bet`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: parseInt(USER_ID),
+                        amount: selectedAmount
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    showMessage('❌ ' + data.error, 'lose');
+                    return;
+                }
+                
+                showMessage('✅ تم وضع الرهان بنجاح!', 'win');
+                isPlaying = true;
+                currentBet = selectedAmount;
+                currentMultiplier = 1.0;
+                
+                // تحديث الرصيد
+                refreshBalance();
+                
+                // تمكين زر الصرف
+                document.getElementById('btn-cashout').disabled = false;
+                
+                // بدء حركة الطائرة
+                startPlaneAnimation();
+                
+                // بدء زيادة المضاعف
+                startMultiplierIncrease();
+                
+            } catch (error) {
+                console.error('خطأ في وضع الرهان:', error);
+                showMessage('❌ خطأ في الاتصال', 'lose');
+            }
+        }
+        
+        // صرف الربح
+        async function cashOut() {
+            if (!isPlaying || !currentBet) {
+                showMessage('❌ ليس لديك رهان نشط', 'lose');
+                return;
+            }
+            
+            const winAmount = Math.floor(currentBet * currentMultiplier);
+            
+            showMessage(`🎉 صرفت الربح: ${winAmount} نقطة (${currentMultiplier.toFixed(2)}x)`, 'win');
+            
+            // إيقاف الحركة
+            stopPlaneAnimation();
+            stopMultiplierIncrease();
+            
+            // تحديث الرصيد
+            await refreshBalance();
+            
+            // إعادة تعيين
+            isPlaying = false;
+            currentBet = null;
+            document.getElementById('btn-cashout').disabled = true;
+        }
+        
+        // بدء حركة الطائرة
+        function startPlaneAnimation() {
+            const plane = document.getElementById('plane');
+            const multiplierDisplay = document.getElementById('current-multiplier');
+            
+            plane.style.animation = 'takeoff 5s linear forwards';
+            planeAnimation = setInterval(() => {
+                multiplierDisplay.textContent = currentMultiplier.toFixed(2) + 'x';
+            }, 100);
+        }
+        
+        // إيقاف حركة الطائرة
+        function stopPlaneAnimation() {
+            const plane = document.getElementById('plane');
+            clearInterval(planeAnimation);
+            plane.style.animation = '';
+            plane.style.bottom = '20px';
+        }
+        
+        // بدء زيادة المضاعف
+        function startMultiplierIncrease() {
+            const increaseInterval = setInterval(() => {
+                if (!isPlaying) {
+                    clearInterval(increaseInterval);
+                    return;
+                }
+                
+                // زيادة المضاعف بشكل عشوائي
+                const increase = 0.01 + Math.random() * 0.05;
+                currentMultiplier += increase;
+                
+                // فرصة 5% للسقوط
+                if (Math.random() < 0.05) {
+                    showMessage('💥 سقطت الطائرة!', 'lose');
+                    stopPlaneAnimation();
+                    clearInterval(increaseInterval);
+                    isPlaying = false;
+                    currentBet = null;
+                    document.getElementById('btn-cashout').disabled = true;
+                    
+                    // تأثير السقوط
+                    const plane = document.getElementById('plane');
+                    plane.style.animation = 'crash 1s forwards';
+                    setTimeout(() => {
+                        plane.style.animation = '';
+                        plane.style.bottom = '20px';
+                    }, 1000);
+                }
+                
+            }, 100);
+        }
+        
+        // إيقاف زيادة المضاعف
+        function stopMultiplierIncrease() {
+            // يتم إيقافه في الدالة السابقة
+        }
+        
+        // عرض رسالة
+        function showMessage(text, type = '') {
+            const messageElement = document.getElementById('message');
+            messageElement.textContent = text;
+            messageElement.className = 'message ' + type;
+        }
+        
+        // عرض نموذج إرسال الرصيد
+        function showSendForm() {
+            const toUserId = prompt('أدخل معرف المستخدم المرسل إليه:');
+            if (!toUserId) return;
+            
+            const amount = prompt('أدخل المبلغ المراد إرساله:');
+            if (!amount) return;
+            
+            if (confirm(`هل تريد إرسال ${amount} نقطة إلى ${toUserId}؟`)) {
+                sendBalance(toUserId, amount);
+            }
+        }
+        
+        // إرسال الرصيد
+        async function sendBalance(toUserId, amount) {
+            try {
+                const response = await fetch(`${BASE_URL}/api/send`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        from_user: parseInt(USER_ID),
+                        to_user: parseInt(toUserId),
+                        amount: parseInt(amount)
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    showMessage('❌ ' + data.error, 'lose');
+                    return;
+                }
+                
+                showMessage('✅ تم إرسال الرصيد بنجاح', 'win');
+                refreshBalance();
+                
+            } catch (error) {
+                console.error('خطأ في إرسال الرصيد:', error);
+                showMessage('❌ خطأ في الاتصال', 'lose');
+            }
+        }
+        
+        // عرض معلومات الجولة
+        function showRoundInfo() {
+            alert('📊 معلومات النظام:\n\n• الجولة: 60 ثانية\n• وقت الرهان: 30 ثانية\n• المضاعف: يبدأ من 1.00x\n• الرهان: اختر مبلغاً واضغط وضع الرهان\n• الصرف: اضغط صرف الآن قبل سقوط الطائرة');
+        }
+        
+        // تهيئة الصفحة
+        window.onload = function() {
+            createBetButtons();
+            refreshBalance();
+            refreshRoundInfo();
+            
+            // تحديث معلومات الجولة كل 5 ثوان
+            setInterval(refreshRoundInfo, 5000);
+            
+            // تحديث العداد كل ثانية
+            setInterval(() => {
+                const timerElement = document.getElementById('timer');
+                const time = timerElement.textContent.split(':');
+                let minutes = parseInt(time[0]);
+                let seconds = parseInt(time[1]);
+                
+                if (seconds > 0) {
+                    seconds--;
+                } else if (minutes > 0) {
+                    minutes--;
+                    seconds = 59;
+                }
+                
+                timerElement.textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        };
+    </script>
+</body>
+</html>
