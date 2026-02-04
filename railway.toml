@@ -1,0 +1,29 @@
+[build]
+builder = "nixpacks"
+buildCommand = "pip install -r requirements.txt"
+
+[deploy]
+startCommand = "python main.py"
+healthcheckPath = "/"
+healthcheckTimeout = 60
+restartPolicyType = "always"
+
+[variables]
+BOT_TOKEN = { required = true }
+ADMIN_ID = { required = true }
+ENVIRONMENT = "production"
+
+[[services]]
+port = 8000
+name = "web"
+type = "web"
+
+[[services]]
+name = "bot"
+type = "worker"
+startCommand = "python main.py"
+
+[services.env]
+BOT_TOKEN = { from = "variables.BOT_TOKEN" }
+ADMIN_ID = { from = "variables.ADMIN_ID" }
+ENVIRONMENT = { from = "variables.ENVIRONMENT" }
