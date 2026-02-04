@@ -388,7 +388,7 @@ async def startup_event():
     print(f"🌐 الرابط: {BASE_URL}")
     print(f"🤖 البوت: {BOT_TOKEN[:10]}...")
     print(f"👑 الأدمن: {ADMIN_ID}")
-    print(f💰 الرهان: {BET_AMOUNT} نقطة")
+    print(f"💰 الرهان: {BET_AMOUNT} نقطة")
     print(f"⏰ الوقت: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("=" * 50)
     print("✅ التطبيق يعمل وجاهز للاستخدام!")
