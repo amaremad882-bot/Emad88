@@ -5,4 +5,4 @@ RAILWAY_PUBLIC_DOMAIN = os.getenv('RAILWAY_PUBLIC_DOMAIN', '').strip()
 
 
 # إعدادات السيرفر
-PORT=8080
+PORT=8000
